@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>share-thoughts</title>
+        <!-- BootstrapのCSS読み込み -->
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <!-- jQuery読み込み -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <!-- BootstrapのJS読み込み -->
+        <script src="js/bootstrap.min.js"></script>
+    </head>
+
+    <body>
+        <div class='fixed-top'>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">share-thoughts</a>
+                    <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#Navber" aria-controls="Navber" aria-expanded="false" aria-label="ナビゲーションの切替">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <div class="collapse navbar-collapse" id="Navber">
+                        <div class="navbar-nav me-auto mb-2 mb-lg-0"></div>
+                        <form class="d-flex">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">プロフィール</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="https://share-thoughts-7568d.web.app/login">ログアウト</a>
+                                </li>
+                            </ul>
+                        </form>
+                    </div><!-- /.navbar-collapse -->
+                </div><!-- /.container-fluid -->
+            </nav>
+        </div>
+        <!-- Vertically centered modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">アイデアを追加</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="recipient-name" class="col-form-label">Title:</label>
+                                <input type="text" class="form-control editor title" id="recipient-name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="message-text" class="col-form-label">About:</label>
+                                <textarea class="form-control editor about" id="message-text"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                        <button type="button" class="btn btn-primary send" data-bs-dismiss="modal">送信</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="padding-top: 60px;">
+            <div class="container" style="width: 60vw; margin: 0 auto;">
+                <div style="text-align: right;">
+                    <button type="button" class="btn btn-outline-secondary">
+                        <a class="doun" style="text-decoration: none; color: inherit" href="#">新着順</a>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <a class="up" style="text-decoration: none; color: inherit" href="#page-bottom">投稿順</a>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <a style="text-decoration: none; color: inherit" href="#page-bottom">ページの一番下へ</a>
+                    </button>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">＋</button>
+                </div>
+                
+                <div id="thoughts">
+                </div>
+
+                <div style="text-align: right;">
+                    <button type="button" class="btn btn-outline-secondary">
+                        <a style="text-decoration: none; color: inherit" href="#">ページの一番上へ</a>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.2.4/firebase-firestore.js"></script>
+
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+            https://firebase.google.com/docs/web/setup#available-libraries -->
+
+        <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyArN99eD8_VUXBSQ1x2ZDEPHpaE5dO61Os",
+            authDomain: "share-thoughts-7568d.firebaseapp.com",
+            projectId: "share-thoughts-7568d",
+            storageBucket: "share-thoughts-7568d.appspot.com",
+            messagingSenderId: "882083119512",
+            appId: "1:882083119512:web:274c574575665328d46bed"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+            const db = firebase.firestore();
+
+            // thoughtsを読み込む
+            db.collection("thoughts").orderBy("createdAt", "desc")
+                .onSnapshot((querySnapshot) => {
+                    const div = document.getElementById("thoughts")
+                    div.innerHTML = ""
+                    querySnapshot.forEach((doc) => {
+                        // 取得できたデータをforEach
+                        // 取得できたデータをulタグに追加
+                        const card = document.createElement("div")
+                        card.className = "card"
+                        const item = document.createElement("div")
+                        item.className = "card-body"
+                        const title = document.createElement("h5")
+                        title.className = "card-title"
+                        const about = document.createElement("p")
+                        about.className = "card-text"
+                        const time = document.createElement("p")
+                        time.className = "card-text"
+                        time.style = "text-align: right"
+
+                        //○○秒前表示
+                        const useDisplayTime = (unixTime)  => {
+
+                            let date = new Date(unixTime);
+                            let diff = new Date().getTime() - date.getTime();
+                            let d = new Date(diff);
+                            let test 
+                                
+                            if (d.getUTCFullYear() - 1970) {
+                                test = d.getUTCFullYear() - 1970 + "年前";
+                            } else if (d.getUTCMonth()) {
+                            test = d.getUTCMonth() + "ヶ月前";
+                            } else if (d.getUTCDate() - 1) {
+                            test = d.getUTCDate() - 1 + "日前";
+                            } else if (d.getUTCHours()) {
+                            test = d.getUTCHours() + "時間前";
+                            } else if (d.getUTCMinutes()) {
+                            test = d.getUTCMinutes() + "分前";
+                            } else {
+                            test = d.getUTCSeconds() + "秒前";
+                            }
+
+                        return test;
+                        };
+
+                        title.innerText = doc.data().title
+                        about.innerText = doc.data().about
+                        time.innerText = useDisplayTime(doc.data().createdAt.toMillis())
+
+                        div.appendChild(card)
+                        card.appendChild(item)
+                        item.appendChild(title)
+                        item.appendChild(about)
+                        item.appendChild(time)
+                    })
+                })
+
+                // 並べ替え
+                const up = document.querySelector('.up')
+                const doun = document.querySelector('.doun')
+
+                up.addEventListener('click', () => {
+                    db.collection("thoughts").orderBy("createdAt").onSnapshot((querySnapshot) => {
+                        const div = document.getElementById("thoughts")
+                        div.innerHTML = ""
+                        querySnapshot.forEach((doc) => {
+                            // 取得できたデータをforEach
+                            // 取得できたデータをulタグに追加
+                            const card = document.createElement("div")
+                            card.className = "card"
+                            const item = document.createElement("div")
+                            item.className = "card-body"
+                            const title = document.createElement("h5")
+                            title.className = "card-title"
+                            const about = document.createElement("p")
+                            about.className = "card-text"
+                            const time = document.createElement("p")
+                            time.className = "card-text"
+                            time.style = "text-align: right"
+
+                            //○○秒前表示
+                            const useDisplayTime = (unixTime)  => {
+
+                                let date = new Date(unixTime);
+                                let diff = new Date().getTime() - date.getTime();
+                                let d = new Date(diff);
+                                let test 
+                                    
+                                if (d.getUTCFullYear() - 1970) {
+                                    test = d.getUTCFullYear() - 1970 + "年前";
+                                } else if (d.getUTCMonth()) {
+                                test = d.getUTCMonth() + "ヶ月前";
+                                } else if (d.getUTCDate() - 1) {
+                                test = d.getUTCDate() - 1 + "日前";
+                                } else if (d.getUTCHours()) {
+                                test = d.getUTCHours() + "時間前";
+                                } else if (d.getUTCMinutes()) {
+                                test = d.getUTCMinutes() + "分前";
+                                } else {
+                                test = d.getUTCSeconds() + "秒前";
+                                }
+
+                            return test;
+                            };
+
+                            title.innerText = doc.data().title
+                            about.innerText = doc.data().about
+                            time.innerText = useDisplayTime(doc.data().createdAt.toMillis())
+
+                            div.appendChild(card)
+                            card.appendChild(item)
+                            item.appendChild(title)
+                            item.appendChild(about)
+                            item.appendChild(time)
+                        })
+                    })
+                })
+
+                doun.addEventListener('click', () => {
+                    db.collection("thoughts").orderBy("createdAt", "desc").onSnapshot((querySnapshot) => {
+                        const div = document.getElementById("thoughts")
+                        div.innerHTML = ""
+                        querySnapshot.forEach((doc) => {
+                            // 取得できたデータをforEach
+                            // 取得できたデータをulタグに追加
+                            const card = document.createElement("div")
+                            card.className = "card"
+                            const item = document.createElement("div")
+                            item.className = "card-body"
+                            const title = document.createElement("h5")
+                            title.className = "card-title"
+                            const about = document.createElement("p")
+                            about.className = "card-text"
+                            const time = document.createElement("p")
+                            time.className = "card-text"
+                            time.style = "text-align: right"
+
+                            //○○秒前表示
+                            const useDisplayTime = (unixTime)  => {
+
+                                let date = new Date(unixTime);
+                                let diff = new Date().getTime() - date.getTime();
+                                let d = new Date(diff);
+                                let test 
+                                    
+                                if (d.getUTCFullYear() - 1970) {
+                                    test = d.getUTCFullYear() - 1970 + "年前";
+                                } else if (d.getUTCMonth()) {
+                                test = d.getUTCMonth() + "ヶ月前";
+                                } else if (d.getUTCDate() - 1) {
+                                test = d.getUTCDate() - 1 + "日前";
+                                } else if (d.getUTCHours()) {
+                                test = d.getUTCHours() + "時間前";
+                                } else if (d.getUTCMinutes()) {
+                                test = d.getUTCMinutes() + "分前";
+                                } else {
+                                test = d.getUTCSeconds() + "秒前";
+                                }
+
+                            return test;
+                            };
+
+                            title.innerText = doc.data().title
+                            about.innerText = doc.data().about
+                            time.innerText = useDisplayTime(doc.data().createdAt.toMillis())
+
+                            div.appendChild(card)
+                            card.appendChild(item)
+                            item.appendChild(title)
+                            item.appendChild(about)
+                            item.appendChild(time)
+                        })
+                    })
+                })
+
+            // thoughtsに書き込む
+            document
+                .querySelector(".send")
+                .addEventListener("click", event => {
+                    // table -> collection
+                    // row -> doc, document
+                    const editor = document.querySelector(".editor")
+                    const title = document.querySelector(".title")
+                    const about = document.querySelector(".about")
+                    editor.disabled = true
+                    event.target.disabled = true
+
+                    db.collection("thoughts")
+                        .doc()
+                        .set({
+                            title: `${title.value}`,
+                            about: `${about.value}`,
+                            createdAt: new Date()
+                        })
+                        .then(function () {
+                            // 成功したら
+                            console.log("Document successfully written!");
+                            editor.value = ""
+                        })
+                        .catch(function (error) {
+                            // 失敗したら
+                            console.error("Error writing document: ", error);
+                        })
+                        .then(() => {
+                            editor.disabled = false
+                            event.target.disabled = false
+                        })
+                })
+
+                // ページ下部へスクロール
+                $(function(){
+                    $("a[href^=#page-bottom]").click(function(){
+                        $('html, body').animate({
+                        scrollTop: $(document).height()
+                        },1);
+                        return false;
+                    });
+                });
+        </script>
+    </body>
+
+</html>
